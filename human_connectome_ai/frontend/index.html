@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conectoma Cerebral Humano 3D | Redes Neuronales de Estímulos</title>
+  
+  <!-- Tipografía Google Fonts & Iconos FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Estilos Cyber-Neuro -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Lienzo 3D WebGL Three.js -->
+  <canvas id="connectome-canvas"></canvas>
+
+  <!-- Tooltip 3D Flotante -->
+  <div id="brain-tooltip"></div>
+
+  <!-- HUD Interface Overlay -->
+  <div id="hud-overlay">
+
+    <!-- BARRA SUPERIOR -->
+    <header class="hud-header interactive-panel">
+      <div class="brand-section">
+        <div class="brand-logo">🧠</div>
+        <div class="brand-title">
+          <h1>HUMAN CONNECTOME <span class="badge">v2.4 NEURO-AI</span></h1>
+          <div class="brand-subtitle">Simulador 3D de Dinámica Sináptica y Estímulos Corporales</div>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <div class="status-pill" id="backend-status-pill">
+          <div class="status-dot"></div>
+          <span id="backend-status-text">CONECTANDO MOTOR...</span>
+        </div>
+
+        <button class="btn-header" id="btn-audio-toggle">
+          <i class="fas fa-volume-mute"></i> AUDIO: OFF
+        </button>
+
+        <button class="btn-header" id="btn-reset-all">
+          <i class="fas fa-rotate-left"></i> HOMEOSTASIS
+        </button>
+      </div>
+    </header>
+
+    <!-- CUERPO PRINCIPAL DEL HUD -->
+    <main class="hud-body">
+
+      <!-- BARRA LATERAL IZQUIERDA: CONTROLES DE ESTÍMULOS -->
+      <aside class="hud-sidebar interactive-panel">
+        <div class="sidebar-header">
+          <h2><i class="fas fa-sliders-h"></i> Estímulos Corporales</h2>
+          <span style="font-size: 10px; color: var(--text-dim); font-family: var(--font-mono);">MULTI-INPUT</span>
+        </div>
+
+        <div class="sidebar-content">
+
+          <!-- GRUPO 1: ESTÍMULOS PRIMARIOS VITALES -->
+          <div class="section-title"><i class="fas fa-dna"></i> Instintos y Supervivencia</div>
+
+          <!-- HAMBRE -->
+          <div class="stimulus-card" id="card-hambre">
+            <div class="card-top">
+              <div class="card-label">
+                <span class="card-icon">🍗</span>
+                <span>Hambre / Apetito</span>
+              </div>
+              <span class="card-badge">Eje Vago-Hipotalámico</span>
+            </div>
+            <div class="card-desc">Grelina gástrica estimula el Hipotálamo Lateral y el Núcleo Accumbens genera urgencia calórica.</div>
+            <div class="slider-container">
+              <input type="range" class="stimulus-slider" data-stimulus="hambre" min="0" max="100" value="0">
+              <span class="slider-val">0%</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-pulse" data-stimulus="hambre" data-intensity="0.9">
+                <i class="fas fa-bolt"></i> Apetito Voraz (90%)
+              </button>
+            </div>
+          </div>
+
+          <!-- EXCITACIÓN SEXUAL -->
+          <div class="stimulus-card" id="card-excitacion">
+            <div class="card-top">
+              <div class="card-label">
+                <span class="card-icon">🔥</span>
+                <span>Excitación Sexual / Libido</span>
+              </div>
+              <span class="card-badge">MPOA - Recompensa - Oxitocina</span>
+            </div>
+            <div class="card-desc">Área preóptica medial inunda de Dopamina el Núcleo Accumbens con hipofrontalidad y oleadas de oxitocina.</div>
+            <div class="slider-container">
+              <input type="range" class="stimulus-slider" data-stimulus="excitacion" min="0" max="100" value="0">
+              <span class="slider-val">0%</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-pulse" data-stimulus="excitacion" data-intensity="1.0">
+                <i class="fas fa-fire"></i> Clímax Orgásmico (100%)
+              </button>
+            </div>
+          </div>
+
+          <!-- MIEDO / PÁNICO -->
+          <div class="stimulus-card" id="card-miedo">
+            <div class="card-top">
+              <div class="card-label">
+                <span class="card-icon">⚡</span>
+                <span>Miedo / Alarma Aguda</span>
+              </div>
+              <span class="card-badge">Amígdala - Noradrenalina</span>
+            </div>
+            <div class="card-desc">Vía rápida de 12ms al Locus Coeruleus: taquicardia, dilatación pupilar y parálisis o huida motora.</div>
+            <div class="slider-container">
+              <input type="range" class="stimulus-slider" data-stimulus="miedo" min="0" max="100" value="0">
+              <span class="slider-val">0%</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-pulse" data-stimulus="miedo" data-intensity="0.95">
+                <i class="fas fa-radiation"></i> Pánico Súbito (95%)
+              </button>
+            </div>
+          </div>
+
+          <!-- DOLOR AGUDO -->
+          <div class="stimulus-card" id="card-dolor">
+            <div class="card-top">
+              <div class="card-label">
+                <span class="card-icon">🩸</span>
+                <span>Dolor Agudo / Nocicepción</span>
+              </div>
+              <span class="card-badge">Espinotalámico - Cíngulo</span>
+            </div>
+            <div class="card-desc">Fibras A-delta activan el Tálamo, corteza somatosensorial S1 (ubicación) y Cíngulo (sufrimiento).</div>
+            <div class="slider-container">
+              <input type="range" class="stimulus-slider" data-stimulus="dolor" min="0" max="100" value="0">
+              <span class="slider-val">0%</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-pulse" data-stimulus="dolor" data-intensity="0.9">
+                <i class="fas fa-hand-holding-heart"></i> Daño Tisular (90%)
+              </button>
+            </div>
+          </div>
+
+          <!-- GRUPO 2: ESTADOS SUPERIORES Y AFECTIVOS -->
+          <div class="section-title"><i class="fas fa-brain"></i> Cognición, Sueño y Vínculo</div>
+
+          <!-- ENFOQUE / FLOW -->
+          <div class="stimulus-card" id="card-enfoque">
+            <div class="card-top">
+              <div class="card-label">
+                <span class="card-icon">🧠</span>
+                <span>Enfoque Cognitivo / Flow</span>
+              </div>
+              <span class="card-badge">DLPFC - Fronto-Parietal</span>
+            </div>
+            <div class="card-desc">Corteza Prefrontal Dorsolateral sincronizada, silenciamiento de ruidos distractores y dopamina tónica.</div>
+            <div class="slider-container">
+              <input type="range" class="stimulus-slider" data-stimulus="enfoque" min="0" max="100" value="0">
+              <span class="slider-val">0%</span>
+            </div>
+          </div>
+
+          <!-- SUEÑO PROFUNDO -->
+          <div class="stimulus-card" id="card-sueno">
+            <div class="card-top">
+              <div class="card-label">
+                <span class="card-icon">🌙</span>
+                <span>Sueño Profundo / Fatiga</span>
+              </div>
+              <span class="card-badge">VLPO - Melatonina - GABA</span>
+            </div>
+            <div class="card-desc">El interruptor VLPO inhibe el tronco encefálico e induce ondas Delta de regeneración celular.</div>
+            <div class="slider-container">
+              <input type="range" class="stimulus-slider" data-stimulus="sueno" min="0" max="100" value="0">
+              <span class="slider-val">0%</span>
+            </div>
+          </div>
+
+          <!-- AMOR / APEGO -->
+          <div class="stimulus-card" id="card-amor">
+            <div class="card-top">
+              <div class="card-label">
+                <span class="card-icon">💖</span>
+                <span>Amor y Apego Afectivo</span>
+              </div>
+              <span class="card-badge">Oxitocina - VTA - Empatía</span>
+            </div>
+            <div class="card-desc">Supresión de desconfianza amigdalina, apego vincular cálido y disminución profunda de cortisol.</div>
+            <div class="slider-container">
+              <input type="range" class="stimulus-slider" data-stimulus="amor" min="0" max="100" value="0">
+              <span class="slider-val">0%</span>
+            </div>
+          </div>
+
+          <!-- EUFORIA / LOGRO -->
+          <div class="stimulus-card" id="card-euforia">
+            <div class="card-top">
+              <div class="card-label">
+                <span class="card-icon">🏆</span>
+                <span>Euforia / Victoria</span>
+              </div>
+              <span class="card-badge">Dopamina + Endorfinas</span>
+            </div>
+            <div class="card-desc">Estallido mesolímbico de logro extraordinario con sensación de invulnerabilidad y plenitud.</div>
+            <div class="slider-container">
+              <input type="range" class="stimulus-slider" data-stimulus="euforia" min="0" max="100" value="0">
+              <span class="slider-val">0%</span>
+            </div>
+          </div>
+
+          <!-- ESCENARIOS PREDETERMINADOS -->
+          <div class="section-title"><i class="fas fa-play-circle"></i> Escenarios Biológicos Clave</div>
+          <div class="preset-grid">
+            <button class="btn-preset" data-scenario="dopamine_storm">
+              <span class="preset-name">🌪️ Tormenta Dopamina</span>
+              <span class="preset-desc">Hambre Voraz + Excitación</span>
+            </button>
+            <button class="btn-preset" data-scenario="fight_or_flight">
+              <span class="preset-name">⚡ Lucha o Huida</span>
+              <span class="preset-desc">Pánico + Dolor Agudo</span>
+            </button>
+            <button class="btn-preset" data-scenario="deep_love">
+              <span class="preset-name">💖 Éxtasis Afectivo</span>
+              <span class="preset-desc">Amor Profundo + Victoria</span>
+            </button>
+            <button class="btn-preset" data-scenario="circadian_day">
+              <span class="preset-name">⏱️ Día Biológico</span>
+              <span class="preset-desc">Ciclo circadiano completo</span>
+            </button>
+          </div>
+
+        </div>
+      </aside>
+
+      <!-- BARRA LATERAL DERECHA: TELEMETRÍA NEUROQUÍMICA & EEG -->
+      <aside class="hud-sidebar telemetry-sidebar interactive-panel">
+        <div class="sidebar-header">
+          <h2><i class="fas fa-chart-line"></i> Telemetría Encefálica</h2>
+          <span style="font-size: 10px; color: var(--color-cyan); font-family: var(--font-mono);">LIVE STREAM</span>
+        </div>
+
+        <div class="sidebar-content">
+
+          <!-- BANNER DE ESTADO ACTUAL -->
+          <div class="state-banner" id="state-banner">
+            <div class="state-icon">⚖️</div>
+            <div class="state-meta">
+              <div class="state-category">HOMEOSTASIS</div>
+              <div class="state-title">Estado Homeostático Basal</div>
+            </div>
+          </div>
+
+          <!-- OSCILOSCOPIO DE ONDAS CEREBRALES (EEG) -->
+          <div class="oscilloscope-panel">
+            <div class="oscilloscope-header">
+              <span>OSCILOGRAMA EEG MULTI-CANAL</span>
+              <span>0.5 - 100 Hz</span>
+            </div>
+            <canvas id="eeg-canvas" width="360" height="70"></canvas>
+            
+            <div class="brainwave-bars">
+              <div class="wave-col">
+                <div class="wave-label">DELTA (δ)</div>
+                <div class="wave-bar-track"><div class="wave-bar-fill" id="wave-bar-delta" style="background:#6366f1;"></div></div>
+              </div>
+              <div class="wave-col">
+                <div class="wave-label">THETA (θ)</div>
+                <div class="wave-bar-track"><div class="wave-bar-fill" id="wave-bar-theta" style="background:#3b82f6;"></div></div>
+              </div>
+              <div class="wave-col">
+                <div class="wave-label">ALPHA (α)</div>
+                <div class="wave-bar-track"><div class="wave-bar-fill" id="wave-bar-alpha" style="background:#10b981;"></div></div>
+              </div>
+              <div class="wave-col">
+                <div class="wave-label">BETA (β)</div>
+                <div class="wave-bar-track"><div class="wave-bar-fill" id="wave-bar-beta" style="background:#f59e0b;"></div></div>
+              </div>
+              <div class="wave-col">
+                <div class="wave-label">GAMMA (γ)</div>
+                <div class="wave-bar-track"><div class="wave-bar-fill" id="wave-bar-gamma" style="background:#f43f5e;"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- INSPECTOR DE ESTRUCTURA ANATÓMICA -->
+          <div class="inspector-card" id="inspector-card">
+            <div class="inspector-title">Hipotálamo Lateral [HYPO_LH]</div>
+            <div class="inspector-meta">MNI 3D: [0.0, 3.5, -4.0] | Neurotransmisores: Grelina, Orexina</div>
+            <div class="inspector-desc">Centro maestro del apetito y vigilia metabólica.</div>
+          </div>
+
+          <!-- NIVELES DE NEUROTRANSMISORES -->
+          <div class="section-title"><i class="fas fa-flask"></i> Perfil Neuroquímico / Hormonal</div>
+          <div class="neuro-list" id="neuro-list">
+            <!-- Rellenado dinámico -->
+          </div>
+
+          <!-- CASCADA NEUROBIOLÓGICA EN TIEMPO REAL -->
+          <div class="section-title"><i class="fas fa-project-diagram"></i> Fisiología del Estímulo Activo</div>
+          <div class="narrative-box" id="narrative-box">
+            <div class="narrative-step">
+              <strong>Homeostasis Neurovegetativa:</strong> El encéfalo mantiene potenciales de membrana en reposo basal (-70mV). Los núcleos dopaminérgicos y serotoninérgicos operan a frecuencias tónicas de equilibrio.
+            </div>
+          </div>
+
+        </div>
+      </aside>
+
+    </main>
+
+    <!-- BARRA INFERIOR (FOOTER) -->
+    <footer class="hud-footer interactive-panel">
+      <!-- Modos de Visualización 3D -->
+      <div class="view-modes">
+        <span style="align-self: center; font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); margin-right: 6px;">CAPAS:</span>
+        <button class="btn-view active" data-view="full">Completo</button>
+        <button class="btn-view" data-view="subcortical">Subcórtex</button>
+        <button class="btn-view" data-view="tracts">Solo Tractografía</button>
+        <button class="btn-view" data-view="transparent">Transparente</button>
+      </div>
+
+      <!-- Vistas de Cámara -->
+      <div class="view-modes">
+        <span style="align-self: center; font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); margin-right: 6px;">PERSPECTIVA:</span>
+        <button class="btn-view active" data-camera="perspective">3D Libre</button>
+        <button class="btn-view" data-camera="sagittal">Sagital (Lateral)</button>
+        <button class="btn-view" data-camera="coronal">Coronal (Frontal)</button>
+        <button class="btn-view" data-camera="axial">Axial (Dorsal)</button>
+      </div>
+
+      <!-- Telemetría rápida de actividad sináptica -->
+      <div class="stats-bar">
+        <div class="stat-item">Nodos Activos: <span id="stat-active-nodes">0</span></div>
+        <div class="stat-item">Fibras Axónicas: <span id="stat-active-tracts">0</span></div>
+        <div class="stat-item">Frecuencia Disparo: <span id="stat-firing-rate">15 Hz</span></div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- LIBRERÍAS EXTERNAS: THREE.JS Y ORBIT CONTROLS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- MÓDULOS DE LA APLICACIÓN -->
+  <script src="js/fallback_data.js"></script>
+  <script src="js/tractography.js"></script>
+  <script src="js/connectome_scene.js"></script>
+  <script src="js/hud_overlay.js"></script>
+  <script src="js/stimulus_controller.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
